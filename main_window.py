@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QLabel
+from PyQt5.QtWidgets import QMainWindow, QLabel, QPushButton
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 import requests
@@ -9,6 +9,7 @@ from io import BytesIO
 class Map(QMainWindow):
     def __init__(self):
         self.API = 'https://static-maps.yandex.ru/1.x/'
+        self.kind = 'hybrid'
         try:
             self.longitude = float(input('Введите долготу >>> '))
             self.latitude = float(input('Введите широту  >>> '))
@@ -22,13 +23,24 @@ class Map(QMainWindow):
         self.setWindowTitle('Map preview')
         self.setGeometry(100, 100, 1000, 500)
         self.show_pic()
+        self.switch = QPushButton(self)
+        self.switch.setGeometry(10, 10, 150, 30)
+        self.switch.clicked.connect(self.switcher)
+        self.switch.show()
+        self.switcher()
 
     def show_pic(self, name='map'):
         pic = QPixmap(f"{name}.png")
         pic_label = QLabel(self)
-        pic_label.setGeometry(10, 10, pic.width(), pic.height())
+        pic_label.setGeometry(10, 60, pic.width(), pic.height())
         pic_label.setPixmap(pic)
         pic_label.show()
+
+    def switcher(self):
+        kinds = {'map': 'sat', 'sat': 'map', 'hybrid': 'map'}
+        self.kind = kinds[self.kind]
+        self.switch.setText(f'Режим на {self.kind}')
+        self.new_map()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_PageUp:
@@ -36,13 +48,13 @@ class Map(QMainWindow):
         elif event.key() == Qt.Key_PageDown:
             self.length -= self.length / 10
         elif event.key() == Qt.Key_Right:
-            self.longitude += self.length / 30
+            self.longitude += self.length
         elif event.key() == Qt.Key_Left:
-            self.longitude -= self.length / 30
+            self.longitude -= self.length
         elif event.key() == Qt.Key_Up:
-            self.latitude += self.length / 30
+            self.latitude += self.length
         elif event.key() == Qt.Key_Down:
-            self.latitude -= self.length / 30
+            self.latitude -= self.length
         self.new_map()
 
     def new_map(self, name='map'):
@@ -51,7 +63,7 @@ class Map(QMainWindow):
         params = {
             "ll": ",".join([str(self.longitude), str(self.latitude)]),
             "spn": ",".join([str(self.length), str(self.length)]),
-            "l": "map"
+            "l": self.kind
         }
 
         response = requests.get(self.API, params)
