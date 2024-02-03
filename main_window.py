@@ -32,15 +32,21 @@ class Map(QMainWindow):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_PageUp:
-            self.length = self.length + self.length / 10
-            self.new_map()
+            self.length += self.length / 10
         elif event.key() == Qt.Key_PageDown:
-            self.length = self.length - self.length / 10
-            self.new_map()
+            self.length -= self.length / 10
+        elif event.key() == Qt.Key_Right:
+            self.longitude += self.length / 30
+        elif event.key() == Qt.Key_Left:
+            self.longitude -= self.length / 30
+        elif event.key() == Qt.Key_Up:
+            self.latitude += self.length / 30
+        elif event.key() == Qt.Key_Down:
+            self.latitude -= self.length / 30
+        self.new_map()
 
     def new_map(self, name='map'):
-        if 0 >= float(self.length) >= 25:
-            print('crash')
+        if (0 >= self.length >= 25) or (-90 >= self.latitude >= 90) or (-180 >= self.length >= 180):
             return None
         params = {
             "ll": ",".join([str(self.longitude), str(self.latitude)]),
