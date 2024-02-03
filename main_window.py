@@ -1,10 +1,21 @@
 from PyQt5.QtWidgets import QMainWindow, QLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
+import requests
+from PIL import Image
+from io import BytesIO
 
 
 class Map(QMainWindow):
     def __init__(self):
+        self.API = 'https://static-maps.yandex.ru/1.x/'
+        try:
+            self.longitude = float(input('Введите долготу >>> '))
+            self.latitude = float(input('Введите широту  >>> '))
+            self.length = float(input('Введите протяженность области показа карты >>> '))
+        except Exception:
+            print('Неверный ввод. Должно быть числом с плавающей точкой')
+            quit()
         super().__init__()
         self.pic = None
         self.pic_label = None
@@ -12,26 +23,34 @@ class Map(QMainWindow):
         self.setGeometry(100, 100, 1000, 500)
         self.show_pic()
 
-    def show_pic(self):
-        self.pic = QPixmap("map.png")
-        self.pic_label = QLabel(self)
-        self.pic_label.setGeometry(10, 10, self.pic.width(), self.pic.height())
-        self.pic_label.setPixmap(self.pic)
-        self.pic_label.show()
+    def show_pic(self, name='map'):
+        pic = QPixmap(f"{name}.png")
+        pic_label = QLabel(self)
+        pic_label.setGeometry(10, 10, pic.width(), pic.height())
+        pic_label.setPixmap(pic)
+        pic_label.show()
 
     def keyPressEvent(self, event):
-        # if event.key() == Qt.Key_PageUp:
-        #     print('Key_PageUp')
-        # elif event.key() == Qt.Key_PageDown:    # Key_PageUp:
-        #     print('PageDown')
         if event.key() == Qt.Key_PageUp:
-            print(event.key())
-            self.pic.scaledToWidth(self.pic.width() + self.pic.width() // 10)
-            self.pic.scaledToHeight(self.pic.height() + self.pic.height() // 10)
-            self.pic_label.setGeometry(10, 10, self.pic.width(), self.pic.height())
-            self.pic_label.setPixmap(self.pic)
-            self.pic_label.show()
+            self.length = self.length + self.length / 10
+            self.new_map()
         elif event.key() == Qt.Key_PageDown:
-            print(event.key())
-            self.pic_label.resize(self.pic.width() - self.pic.width() // 10,
-                                  self.pic.height() - self.pic.height() // 10)
+            self.length = self.length - self.length / 10
+            self.new_map()
+
+    def new_map(self, name='map'):
+        if 0 >= float(self.length) >= 25:
+            print('crash')
+            return None
+        params = {
+            "ll": ",".join([str(self.longitude), str(self.latitude)]),
+            "spn": ",".join([str(self.length), str(self.length)]),
+            "l": "map"
+        }
+
+        response = requests.get(self.API, params)
+        if response.status_code != 200:
+            print(response.reason)
+            quit()
+        Image.open(BytesIO(response.content)).save(f'{name}.png')
+        self.show_pic(name=name)
