@@ -8,6 +8,7 @@ from io import BytesIO
 
 class Map(QMainWindow):
     def __init__(self):
+        self.address = None
         self.marker = None
         self.search = None
         self.textedit = None
@@ -33,6 +34,10 @@ class Map(QMainWindow):
         self.switcher()
 
     def creator(self):
+        self.address = QLabel(self)
+        self.address.setGeometry(660, 50, 150, 30)
+        self.address.show()
+
         self.switch = QPushButton(self)
         self.switch.setGeometry(10, 10, 150, 30)
         self.switch.clicked.connect(self.switcher)
@@ -56,6 +61,7 @@ class Map(QMainWindow):
 
     def delete_marker(self):
         self.textedit.setText('')
+        self.address.setText('')
         self.marker = None
         self.new_map()
 
@@ -72,8 +78,9 @@ class Map(QMainWindow):
         if response.status_code != 200:
             print(response.reason)
             quit()
-        self.longitude, self.latitude = map(lambda x: float(x), response.json()["response"]["GeoObjectCollection"][
-            "featureMember"][0]["GeoObject"]["Point"]["pos"].split(" "))
+        geo_data = response.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        self.longitude, self.latitude = map(lambda x: float(x), geo_data["Point"]["pos"].split(" "))
+        self.address.setText(geo_data['metaDataProperty']['GeocoderMetaData']['text'])
         self.length = 0.1
         self.marker = ",".join([str(self.longitude), str(self.latitude), 'pm2blm'])
         self.new_map()
