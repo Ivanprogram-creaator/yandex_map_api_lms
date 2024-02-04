@@ -35,7 +35,7 @@ class Map(QMainWindow):
 
     def creator(self):
         self.address = QLabel(self)
-        self.address.setGeometry(660, 50, 150, 30)
+        self.address.setGeometry(660, 50, 500, 100)
         self.address.show()
 
         self.switch = QPushButton(self)
@@ -80,7 +80,7 @@ class Map(QMainWindow):
             quit()
         geo_data = response.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
         self.longitude, self.latitude = map(lambda x: float(x), geo_data["Point"]["pos"].split(" "))
-        self.address.setText(geo_data['metaDataProperty']['GeocoderMetaData']['text'])
+        self.address.setText(',\n'.join(geo_data['metaDataProperty']['GeocoderMetaData']['text'].split(', ')))
         self.length = 0.1
         self.marker = ",".join([str(self.longitude), str(self.latitude), 'pm2blm'])
         self.new_map()
