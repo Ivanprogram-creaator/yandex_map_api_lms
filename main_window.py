@@ -16,7 +16,7 @@ class Map(QMainWindow):
         self.API = 'https://static-maps.yandex.ru/1.x/'
         self.API_GEOCODER = 'http://geocode-maps.yandex.ru/1.x/'
         self.API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
-        self.kind = 'hybrid'
+        self.kind = 'sat,skl'
         try:
             self.longitude = float(input('Введите долготу >>> '))
             self.latitude = float(input('Введите широту  >>> '))
@@ -74,7 +74,7 @@ class Map(QMainWindow):
         pic_label.show()
 
     def switcher(self):
-        kinds = {'map': 'sat', 'sat': 'map', 'hybrid': 'map'}
+        kinds = {'map': 'sat', 'sat': 'sat,skl', 'sat,skl': 'map'}
         self.kind = kinds[self.kind]
         self.switch.setText(f'Режим на {self.kind}')
         self.new_map()
