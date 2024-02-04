@@ -8,7 +8,7 @@ from io import BytesIO
 
 class Map(QMainWindow):
     def __init__(self):
-        self.flag = None
+        self.marker = None
         self.search = None
         self.textedit = None
         self.switch = None
@@ -48,6 +48,17 @@ class Map(QMainWindow):
         self.search.setText('Искать')
         self.search.show()
 
+        self.search = QPushButton(self)
+        self.search.setGeometry(490, 10, 170, 30)
+        self.search.clicked.connect(self.delete_marker)
+        self.search.setText('Сброс поискового результата')
+        self.search.show()
+
+    def delete_marker(self):
+        self.textedit.setText('')
+        self.marker = None
+        self.new_map()
+
     def searcher(self):
         if not self.textedit.toPlainText():
             return None
@@ -64,7 +75,7 @@ class Map(QMainWindow):
         self.longitude, self.latitude = map(lambda x: float(x), response.json()["response"]["GeoObjectCollection"][
             "featureMember"][0]["GeoObject"]["Point"]["pos"].split(" "))
         self.length = 0.1
-        self.flag = ",".join([str(self.longitude), str(self.latitude), 'pm2blm'])
+        self.marker = ",".join([str(self.longitude), str(self.latitude), 'pm2blm'])
         self.new_map()
 
     def show_pic(self, name='map'):
@@ -103,8 +114,8 @@ class Map(QMainWindow):
             "spn": ",".join([str(self.length), str(self.length)]),
             "l": self.kind
         }
-        if self.flag:
-            params['pt'] = self.flag
+        if self.marker:
+            params['pt'] = self.marker
         response = requests.get(self.API, params)
         if response.status_code != 200:
             print(response.reason)
