@@ -8,6 +8,7 @@ from io import BytesIO
 
 class Map(QMainWindow):
     def __init__(self):
+        self.flag = None
         self.search = None
         self.textedit = None
         self.switch = None
@@ -50,7 +51,6 @@ class Map(QMainWindow):
     def searcher(self):
         if not self.textedit.toPlainText():
             return None
-        print(self.textedit.toPlainText())
         params = {
             "apikey": self.API_KEY,
             "geocode": self.textedit.toPlainText(),
@@ -64,7 +64,8 @@ class Map(QMainWindow):
         self.longitude, self.latitude = map(lambda x: float(x), response.json()["response"]["GeoObjectCollection"][
             "featureMember"][0]["GeoObject"]["Point"]["pos"].split(" "))
         self.length = 0.1
-        self.new_map(flag=True)
+        self.flag = ",".join([str(self.longitude), str(self.latitude), 'pm2blm'])
+        self.new_map()
 
     def show_pic(self, name='map'):
         pic = QPixmap(f"{name}.png")
@@ -94,7 +95,7 @@ class Map(QMainWindow):
             self.latitude -= self.length
         self.new_map()
 
-    def new_map(self, name='map', flag=None):
+    def new_map(self, name='map'):
         if (0 >= self.length >= 25) or (-90 >= self.latitude >= 90) or (-180 >= self.length >= 180):
             return None
         params = {
@@ -102,8 +103,8 @@ class Map(QMainWindow):
             "spn": ",".join([str(self.length), str(self.length)]),
             "l": self.kind
         }
-        if flag:
-            params['pt'] = ",".join([str(self.longitude), str(self.latitude), 'pm2blm'])
+        if self.flag:
+            params['pt'] = self.flag
         response = requests.get(self.API, params)
         if response.status_code != 200:
             print(response.reason)
