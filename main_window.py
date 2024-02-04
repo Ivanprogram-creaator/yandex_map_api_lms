@@ -64,7 +64,7 @@ class Map(QMainWindow):
         self.longitude, self.latitude = map(lambda x: float(x), response.json()["response"]["GeoObjectCollection"][
             "featureMember"][0]["GeoObject"]["Point"]["pos"].split(" "))
         self.length = 0.1
-        self.new_map()
+        self.new_map(flag=True)
 
     def show_pic(self, name='map'):
         pic = QPixmap(f"{name}.png")
@@ -94,7 +94,7 @@ class Map(QMainWindow):
             self.latitude -= self.length
         self.new_map()
 
-    def new_map(self, name='map'):
+    def new_map(self, name='map', flag=None):
         if (0 >= self.length >= 25) or (-90 >= self.latitude >= 90) or (-180 >= self.length >= 180):
             return None
         params = {
@@ -102,7 +102,8 @@ class Map(QMainWindow):
             "spn": ",".join([str(self.length), str(self.length)]),
             "l": self.kind
         }
-
+        if flag:
+            params['pt'] = ",".join([str(self.longitude), str(self.latitude), 'pm2blm'])
         response = requests.get(self.API, params)
         if response.status_code != 200:
             print(response.reason)
